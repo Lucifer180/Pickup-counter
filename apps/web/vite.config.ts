@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 const api = process.env.VITE_PROXY_TARGET ?? 'http://localhost:4000';
 
 export default defineConfig({
+  base: process.env.VITE_BASE ?? '/',
   root: fileURLToPath(new URL('.', import.meta.url)),
   plugins: [react()],
   server: {

@@ -7,7 +7,7 @@ import './styles.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <header className="topbar">
         <Link to="/" className="brand">
           Pickup Counter
