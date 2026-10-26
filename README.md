@@ -312,6 +312,36 @@ To use Neon:
 
 Use a separate test database because integration tests clear their tables.
 
+## 🌐 Deployment
+
+| Part | Host | URL |
+|---|---|---|
+| Frontend | GitHub Pages | https://lucifer180.github.io/Pickup-counter/ |
+| API | Render (Node web service) | https://pickup-counter-qtpl.onrender.com |
+
+### Frontend (GitHub Pages)
+
+`.github/workflows/pages.yml` builds and deploys the frontend on every push to `main`. It sets:
+
+- `VITE_BASE=/Pickup-counter/` — the repository sub-path GitHub Pages serves from.
+- `VITE_API_URL=https://pickup-counter-qtpl.onrender.com` — the API the browser calls.
+
+`index.html` is copied to `404.html` so client-side routes work on page refresh.
+
+### API (Render)
+
+| Setting | Value |
+|---|---|
+| Build command | `npm ci --include=dev && npm run build:api` |
+| Start command | `node dist/api/migrate.js && node dist/api/seed.js && node dist/api/server.js` |
+| Environment | `DATABASE_URL`, `WEBHOOK_SECRET`, `ENABLE_PAYMENT_SIMULATOR` |
+
+Render auto-deploys on commits to `main`. If the live commit falls behind, use **Manual Deploy → Deploy latest commit**. Free instances sleep when idle, so the first request after a pause can take 30–60 seconds.
+
+### CORS
+
+The API allows requests from **any origin** (`Access-Control-Allow-Origin: *`), so the GitHub Pages frontend, `localhost`, or any other host can call it. No CORS configuration is needed.
+
 ## ⚙️ Continuous Integration
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` runs:
@@ -400,6 +430,7 @@ These commands help verify webhook security, idempotency, and payment reconcilia
 
 - UPI payment processing is simulated; the QR code is a placeholder.
 - Customer and locker authentication are not implemented.
+- CORS is open to all origins, so any website can call the API from a browser.
 - Refunds and staff review workflows are not automated.
 - The customer interface polls the API rather than using push updates.
 
