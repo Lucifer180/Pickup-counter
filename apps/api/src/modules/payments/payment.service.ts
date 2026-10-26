@@ -15,7 +15,6 @@ export const webhookEventSchema = z.object({
 
 export type WebhookEvent = z.infer<typeof webhookEventSchema>;
 
-/** What happened to the order. Stored on the event row so a redelivery can report it. */
 export type WebhookOutcome =
   | 'paid'
   | 'paid_late_stock_available'
@@ -33,11 +32,6 @@ export interface WebhookResult {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/**
- * Applies one provider event exactly once. The event row insert and the order
- * update share one transaction: either both happen or neither does, so a crash
- * half-way means the provider's retry is processed from scratch.
- */
 export async function processWebhook(event: WebhookEvent, payload: unknown): Promise<WebhookResult> {
   return withTransaction(async (client) => {
     const isNew = await repo.insertEventIfNew(client, event, payload);
@@ -51,27 +45,22 @@ export async function processWebhook(event: WebhookEvent, payload: unknown): Pro
 }
 
 async function applyEvent(db: Queryable, event: WebhookEvent): Promise<WebhookOutcome> {
-  // Only a capture moves money. A failed/pending status changes nothing:
-  // the hold simply runs out and the customer can try again.
+
   if (event.status !== 'captured') return `ignored_status_${event.status}`;
   if (!UUID.test(event.orderId)) return 'ignored_order_not_found';
 
-  // Lock order first, then its products (same order as pickup) to avoid deadlocks.
   const order = await orderRepo.lockOrder(db, event.orderId);
   if (!order) return 'ignored_order_not_found';
 
   if (order.status === 'paid' || order.status === 'picked_up') {
-    // A *different* event id capturing an already-paid order: likely a double
-    // charge. We keep the order as is; the event row is the refund trail.
+
     return 'ignored_already_paid';
   }
   if (order.status === 'needs_review') return 'ignored_order_in_review';
 
-  // order.status is 'pending' or 'expired' from here on.
   const items = await orderRepo.findItems(db, order.id);
   const productIds = items.map((i) => i.product_id);
-  // Taking the product locks serialises us with new orders for the same items,
-  // so the "is the hold still active / is stock still free" check can't race.
+
   await productRepo.lockProducts(db, productIds);
 
   if (event.amountPaise !== order.total_paise) {
@@ -91,9 +80,6 @@ async function applyEvent(db: Queryable, event: WebhookEvent): Promise<WebhookOu
     return 'paid';
   }
 
-  // Late payment: the hold ran out before the money arrived. Honour it if the
-  // units are still free right now (nobody bought them meanwhile); otherwise
-  // a human has to refund. See README → "Late payments".
   const availability = await productRepo.availabilityFor(db, productIds, order.id);
   const stillAvailable = items.every((i) => (availability.get(i.product_id)?.available ?? 0) >= i.quantity);
   if (stillAvailable) {
@@ -110,7 +96,6 @@ async function applyEvent(db: Queryable, event: WebhookEvent): Promise<WebhookOu
   return 'needs_review_late_payment_stock_gone';
 }
 
-/** Dev helper for the customer screen: builds a capture for the order's exact total. */
 export async function simulateCapture(
   db: Queryable,
   orderId: string,

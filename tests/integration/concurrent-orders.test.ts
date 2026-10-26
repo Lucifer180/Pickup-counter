@@ -37,7 +37,6 @@ describe('placing orders under contention', () => {
       expect(r.body.expiresInSeconds).toBeLessThanOrEqual(120);
     }
 
-    // Failed attempts wrote nothing; physical stock is untouched (holds are not sales).
     expect(await countRows('orders')).toBe(2);
     expect(await productState(productId)).toEqual({ stock: 2, available: 0 });
 
@@ -119,13 +118,11 @@ describe('placing orders under contention', () => {
 
     await expireHold(first.body.id);
 
-    // No background job has run, yet the unit is free and the order reports expired.
     expect((await productState(productId)).available).toBe(1);
     const view = await api(baseUrl, 'GET', `/orders/${first.body.id}`);
     expect(view.body).toMatchObject({ status: 'expired', expiresInSeconds: 0 });
     expect((await api(baseUrl, 'POST', '/orders', [{ productId, quantity: 1 }])).status).toBe(201);
 
-    // The job then tidies the stored status.
     expect(await expireOrders()).toBe(1);
     expect((await orderRow(first.body.id)).status).toBe('expired');
   });

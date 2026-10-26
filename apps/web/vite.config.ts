@@ -10,7 +10,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    // Same-origin calls in dev; the API owns these paths.
+
     proxy: {
       '/products': api,
       '/orders': api,

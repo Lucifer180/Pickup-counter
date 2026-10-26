@@ -6,9 +6,9 @@ export interface ProductDto {
   id: string;
   name: string;
   pricePaise: number;
-  /** Units physically in the counter. */
+  
   stock: number;
-  /** stock minus units held by unpaid (and paid-but-uncollected) orders. */
+  
   availableUnits: number;
 }
 

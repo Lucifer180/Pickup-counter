@@ -33,7 +33,6 @@ describe('payment webhook', () => {
     const { rows } = await pool.query('SELECT paid_at FROM orders WHERE id = $1', [order.id]);
     const paidAtAfterFirst = rows[0].paid_at;
 
-    // A third delivery must not touch the order either.
     await sendWebhook(baseUrl, event);
     const again = await pool.query('SELECT paid_at FROM orders WHERE id = $1', [order.id]);
     expect(again.rows[0].paid_at).toEqual(paidAtAfterFirst);

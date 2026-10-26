@@ -10,7 +10,6 @@ export const SEED_PRODUCTS = [
   { name: 'Chocolate Brownie', pricePaise: 6000, stock: 3 },
 ] as const;
 
-/** Idempotent: re-running updates price but never resets stock. */
 export async function seed(connectionString: string): Promise<void> {
   const client = new pg.Client({ connectionString });
   await client.connect();

@@ -1,11 +1,4 @@
-# Runs the same integration tests against Neon itself, on a throwaway branch per PR,
-# and applies migrations to the main Neon branch when main changes.
-#
-# Setup (repo → Settings → Secrets and variables → Actions):
-#   secret   NEON_API_KEY        Neon console → Account → API keys
-#   variable NEON_PROJECT_ID     Neon console → Project settings
-#   secret   NEON_DATABASE_URL   direct (non-pooler) connection string of the main branch
-# Without NEON_PROJECT_ID set, every job here is skipped and only ci.yml runs.
+
 
 name: Neon
 

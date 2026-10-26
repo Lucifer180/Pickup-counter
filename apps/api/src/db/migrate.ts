@@ -5,14 +5,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import pg from 'pg';
 
 const MIGRATIONS_DIR = process.env.MIGRATIONS_DIR ?? fileURLToPath(new URL('./migrations', import.meta.url));
-// Arbitrary constant so two deploys starting at once don't run migrations twice.
+
 const LOCK_ID = 727_001;
 
-/**
- * Minimal forward-only migration runner: applies every *.sql file in order,
- * each in its own transaction, and records it in schema_migrations.
- * Use Neon's *direct* (non-pooler) connection string for migrations if you can.
- */
 export async function runMigrations(connectionString: string, log = console.log): Promise<string[]> {
   const client = new pg.Client({ connectionString });
   await client.connect();

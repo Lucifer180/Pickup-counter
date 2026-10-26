@@ -28,7 +28,6 @@ export async function productState(id: string): Promise<{ stock: number; availab
   return rows[0]!;
 }
 
-/** Moves an order's hold into the past, as if 120 seconds had gone by. */
 export async function expireHold(orderId: string): Promise<void> {
   await pool.query("UPDATE orders SET expires_at = clock_timestamp() - interval '1 second' WHERE id = $1", [orderId]);
 }

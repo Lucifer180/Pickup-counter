@@ -1,7 +1,6 @@
 import pg from 'pg';
 import { env } from '../config/env';
 
-// COUNT/SUM come back as bigint (OID 20). Our quantities are small, so parse them as numbers.
 pg.types.setTypeParser(20, (v) => Number.parseInt(v, 10));
 
 export const pool = new pg.Pool({
@@ -11,14 +10,11 @@ export const pool = new pg.Pool({
   connectionTimeoutMillis: 10_000,
 });
 
-// Neon closes idle connections when the compute scales to zero. Without this
-// listener an idle-client error would crash the process.
 pool.on('error', (err) => {
-  // eslint-disable-next-line no-console
+
   console.error('[db] idle client error', err.message);
 });
 
-/** Anything that can run a query: the pool or a checked-out client inside a transaction. */
 export type Queryable = Pick<pg.Pool | pg.PoolClient, 'query'>;
 
 export async function withTransaction<T>(fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {

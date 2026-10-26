@@ -14,10 +14,6 @@ const orderItem = z.object({
 
 const orderItems = z.array(orderItem).min(1, 'order needs at least one item').max(MAX_LINES);
 
-/**
- * The brief says POST /orders "takes a list of {productId, quantity}".
- * We accept that bare list, or the same list wrapped as { items: [...] }.
- */
 export const createOrderBody = z
   .union([orderItems, z.object({ items: orderItems })])
   .transform((v) => (Array.isArray(v) ? v : v.items));

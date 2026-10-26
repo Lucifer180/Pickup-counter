@@ -1,13 +1,5 @@
 import type { Queryable } from '../../db/pool';
 
-/**
- * An order "holds" its units while it is pending and its hold has not run out,
- * or while it is paid but not yet collected. Expiry is decided by the clock,
- * not by the background job, so a hold is released the instant it expires.
- *
- * clock_timestamp() (not now()) is used on purpose: now() is frozen at the start
- * of the transaction, which would be stale after waiting on a row lock.
- */
 export const ACTIVE_HOLD_SQL = `((o.status = 'pending' AND o.expires_at > clock_timestamp()) OR o.status = 'paid')`;
 
 export interface ProductRow {
@@ -40,16 +32,10 @@ export async function findProduct(db: Queryable, id: string): Promise<ProductRow
   return rows[0] ?? null;
 }
 
-/**
- * Locks the product rows in a fixed (id) order so concurrent transactions queue
- * up instead of deadlocking. Every code path that changes what is held or what
- * is in stock takes these locks first, which serialises the availability check.
- */
 export async function lockProducts(db: Queryable, ids: string[]): Promise<void> {
   await db.query('SELECT id FROM products WHERE id = ANY($1::uuid[]) ORDER BY id FOR UPDATE', [ids]);
 }
 
-/** Availability for the given products, optionally ignoring one order's own hold. Call after lockProducts. */
 export async function availabilityFor(
   db: Queryable,
   ids: string[],
@@ -72,7 +58,6 @@ export async function availabilityFor(
   return new Map(rows.map((r) => [r.id, r]));
 }
 
-/** Permanently removes collected units. The CHECK (stock >= 0) constraint is the last line of defence. */
 export async function decrementStock(db: Queryable, items: { productId: string; quantity: number }[]): Promise<void> {
   const ids = items.map((i) => i.productId);
   await lockProducts(db, ids); // same lock order as everywhere else

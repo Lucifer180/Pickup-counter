@@ -1,7 +1,5 @@
 import type { ErrorRequestHandler, NextFunction, Request, RequestHandler, Response } from 'express';
 
-/** Express 4 does not forward rejected promises to the error handler; this does. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function asyncHandler<R extends Request<any>>(
   fn: (req: R, res: Response, next: NextFunction) => Promise<unknown>,
 ): RequestHandler {
@@ -10,7 +8,6 @@ export function asyncHandler<R extends Request<any>>(
   };
 }
 
-/** An error that is safe to show to the client, with a stable machine-readable code. */
 export class AppError extends Error {
   constructor(
     public readonly status: number,
@@ -37,13 +34,11 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  // Malformed JSON from express.json()
   if (err?.type === 'entity.parse.failed') {
     res.status(400).json({ error: { code: 'INVALID_JSON', message: 'Request body is not valid JSON', requestId } });
     return;
   }
 
-  // eslint-disable-next-line no-console
   console.error(`[${requestId}] unhandled error on ${req.method} ${req.path}`, err);
   res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Something went wrong', requestId } });
 };

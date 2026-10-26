@@ -8,7 +8,6 @@ interface Schemas {
   query?: ZodTypeAny;
 }
 
-/** Validates and replaces req.body / req.params / req.query with the parsed values. */
 export function validateRequest(schemas: Schemas): RequestHandler {
   return (req, _res, next) => {
     for (const key of ['params', 'query', 'body'] as const) {
@@ -23,7 +22,7 @@ export function validateRequest(schemas: Schemas): RequestHandler {
           }))),
         );
       }
-      // Express 4 allows reassigning these.
+
       (req as unknown as Record<string, unknown>)[key] = result.data;
     }
     next();

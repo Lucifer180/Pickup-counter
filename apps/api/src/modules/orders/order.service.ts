@@ -11,7 +11,7 @@ export interface OrderDto {
   totalPaise: number;
   currency: 'INR';
   items: { productId: string; name: string; quantity: number; unitPricePaise: number; lineTotalPaise: number }[];
-  /** Seconds left on the stock hold, measured on the server. 0 once the order is no longer pending. */
+  
   expiresInSeconds: number;
   expiresAt: string;
   paidAt: string | null;
@@ -20,7 +20,6 @@ export interface OrderDto {
   createdAt: string;
 }
 
-/** Same product listed twice → one line with the quantities added up. Sorted for stable lock order. */
 function mergeLines(items: CreateOrderItems): { productId: string; quantity: number }[] {
   const byId = new Map<string, number>();
   for (const { productId, quantity } of items) byId.set(productId, (byId.get(productId) ?? 0) + quantity);
@@ -29,15 +28,6 @@ function mergeLines(items: CreateOrderItems): { productId: string; quantity: num
     .sort((a, b) => a.productId.localeCompare(b.productId));
 }
 
-/**
- * Places an order and holds its stock for HOLD_SECONDS.
- *
- * Correctness: we lock the product rows (in id order) before computing
- * availability, so two orders for the same product run one after the other.
- * Under READ COMMITTED the second transaction's availability query takes a new
- * snapshot after acquiring the lock and therefore sees the first order's hold.
- * Either every line fits and the whole order is held, or nothing is written.
- */
 export async function createOrder(items: CreateOrderItems): Promise<OrderDto> {
   const lines = mergeLines(items);
   const ids = lines.map((l) => l.productId);
@@ -73,7 +63,6 @@ export async function createOrder(items: CreateOrderItems): Promise<OrderDto> {
     return id;
   });
 
-  // Read after commit so expiresInSeconds is measured as close to sending as possible.
   return getOrder(orderId);
 }
 

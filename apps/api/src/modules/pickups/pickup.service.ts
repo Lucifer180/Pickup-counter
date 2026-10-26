@@ -11,12 +11,6 @@ const NOT_CLAIMABLE: Record<Exclude<orderRepo.OrderStatus, 'paid'>, { code: stri
   needs_review: { code: 'ORDER_IN_REVIEW', message: 'This order needs staff review before it can be collected' },
 };
 
-/**
- * Called by a locker. Exactly one of any number of concurrent calls wins:
- * the conditional UPDATE (status = 'paid' → 'picked_up') is atomic, and the
- * losers see the winner's change once its transaction commits.
- * The winner also removes the units from stock, in the same transaction.
- */
 export async function claimPickup(orderId: string): Promise<OrderDto> {
   return withTransaction(async (client) => {
     const claimed = await orderRepo.claimPickup(client, orderId);

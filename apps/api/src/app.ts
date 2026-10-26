@@ -19,7 +19,6 @@ export function createApp(): Express {
   app.use(requestId);
   app.use(cors({ origin: env.CORS_ORIGIN.split(',').map((o) => o.trim()) }));
 
-  // JSON for everything except the webhook, which needs the raw bytes for its signature.
   const json = express.json({ limit: '64kb' });
   app.use((req, res, next) => (req.path === WEBHOOK_PATH ? next() : json(req, res, next)));
 
@@ -36,7 +35,6 @@ export function createApp(): Express {
   app.use(pickupRouter);
   app.use(paymentRouter);
 
-  // In the Docker image the API also serves the built customer screen.
   if (env.WEB_DIST_DIR && existsSync(env.WEB_DIST_DIR)) {
     const dir = path.resolve(env.WEB_DIST_DIR);
     app.use(express.static(dir, { index: false }));

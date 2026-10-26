@@ -22,7 +22,7 @@ export function MenuPage() {
       cart.clear();
       navigate(`/pay/${order.id}`, { state: { snapshot: { order, sentAt } } });
     } catch (e) {
-      // e.g. someone else just took the last unit: show why and refresh availability.
+
       setOrderError(e instanceof ApiError ? e.message : 'Could not place the order. Please try again.');
       await refresh();
     } finally {

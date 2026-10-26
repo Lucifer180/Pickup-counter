@@ -5,7 +5,7 @@ import { startExpireOrdersJob } from './jobs/expire-orders.job';
 
 const app = createApp();
 const server = app.listen(env.PORT, () => {
-  // eslint-disable-next-line no-console
+
   console.log(`[api] listening on http://localhost:${env.PORT} (hold ${env.HOLD_SECONDS}s)`);
 });
 
@@ -15,7 +15,7 @@ let shuttingDown = false;
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  // eslint-disable-next-line no-console
+
   console.log(`[api] ${signal} received, shutting down`);
   stopJob();
   server.close(async () => {

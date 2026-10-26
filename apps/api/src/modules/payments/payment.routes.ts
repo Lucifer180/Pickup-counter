@@ -9,7 +9,6 @@ export const WEBHOOK_PATH = '/payments/webhook';
 
 export const paymentRouter = Router();
 
-// Raw body: the signature must be checked against the exact bytes received.
 paymentRouter.post(
   WEBHOOK_PATH,
   express.raw({ type: () => true, limit: '64kb' }),

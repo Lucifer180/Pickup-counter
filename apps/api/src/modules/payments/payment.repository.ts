@@ -1,12 +1,6 @@
 import type { Queryable } from '../../db/pool';
 import type { WebhookEvent } from './payment.service';
 
-/**
- * The idempotency gate. INSERT ... ON CONFLICT DO NOTHING on the event_id
- * primary key: if a copy of this event is being processed right now in another
- * transaction, this statement waits for it to commit and then inserts nothing.
- * Returns true only for the first delivery.
- */
 export async function insertEventIfNew(db: Queryable, event: WebhookEvent, payload: unknown): Promise<boolean> {
   const { rowCount } = await db.query(
     `INSERT INTO payment_events (event_id, order_id, amount_paise, status, payload, outcome)

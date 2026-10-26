@@ -5,16 +5,10 @@ const TERMINAL: OrderStatus[] = ['paid', 'expired', 'needs_review', 'picked_up']
 
 export interface OrderSnapshot {
   order: Order;
-  /**
-   * performance.now() taken when the request was *sent*. Pairing it with the
-   * server's expiresInSeconds gives a deadline on the browser's monotonic clock,
-   * which ignores the wall clock entirely (the counter's clock may be minutes off).
-   * Using the send time (not receive time) errs on the side of showing less time.
-   */
+  
   sentAt: number;
 }
 
-/** Polls GET /orders/:id until the order reaches a final state. */
 export function useOrder(orderId: string, initial?: OrderSnapshot, pollMs = 2000) {
   const [snapshot, setSnapshot] = useState<OrderSnapshot | null>(initial ?? null);
   const [error, setError] = useState<string | null>(null);

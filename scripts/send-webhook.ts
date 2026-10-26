@@ -1,14 +1,4 @@
-/**
- * Sends a correctly signed payment webhook, like the UPI provider would.
- *
- *   npm run send-webhook -- --order <orderId>                    # capture for the order's exact total
- *   npm run send-webhook -- --order <id> --amount 100            # wrong amount  -> needs_review
- *   npm run send-webhook -- --order <id> --event evt_1 --repeat 3  # same event 3x -> processed once
- *   npm run send-webhook -- --order <id> --status failed
- *   npm run send-webhook -- --order <id> --bad-signature         # -> 401
- *
- * Reads WEBHOOK_SECRET and API_URL (default http://localhost:4000) from env/.env.
- */
+
 import 'dotenv/config';
 import { randomUUID } from 'node:crypto';
 import { parseArgs } from 'node:util';

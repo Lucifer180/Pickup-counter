@@ -1,9 +1,4 @@
-# One command:  docker compose up --build   → open http://localhost:4000
-#
-# By default this uses the bundled Postgres container, so it works with zero setup.
-# To use Neon instead, put your Neon connection string in .env:
-#   DATABASE_URL=postgres://USER:PASSWORD@ep-xxx-pooler.REGION.aws.neon.tech/neondb?sslmode=require
-# and run the same command. (The local db container still starts but is not used.)
+
 
 services:
   db:
@@ -31,7 +26,7 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@db:5432/pickup}
       WEBHOOK_SECRET: ${WEBHOOK_SECRET:-dev_webhook_secret_change_me}
       HOLD_SECONDS: ${HOLD_SECONDS:-120}
-      # Lets the customer screen's "Simulate UPI payment" button work. Demo only.
+
       ENABLE_PAYMENT_SIMULATOR: ${ENABLE_PAYMENT_SIMULATOR:-true}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
     ports:

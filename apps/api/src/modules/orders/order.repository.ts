@@ -50,11 +50,6 @@ export async function insertItems(
   );
 }
 
-/**
- * Read model for the API. A pending order whose hold has run out is reported
- * as expired even if the background job has not flipped it yet, and the seconds
- * left are measured on the database clock at query time.
- */
 export async function findOrderView(db: Queryable, id: string): Promise<OrderViewRow | null> {
   const { rows } = await db.query<OrderViewRow>(
     `SELECT o.id,
@@ -82,7 +77,6 @@ export async function findItems(db: Queryable, orderId: string): Promise<OrderIt
   return rows;
 }
 
-/** Row lock on the order. Serialises webhooks, pickups and the expiry job for one order. */
 export async function lockOrder(db: Queryable, id: string): Promise<LockedOrderRow | null> {
   const { rows } = await db.query<LockedOrderRow>(
     'SELECT id, status, total_paise, expires_at FROM orders WHERE id = $1 FOR UPDATE',
@@ -91,7 +85,6 @@ export async function lockOrder(db: Queryable, id: string): Promise<LockedOrderR
   return rows[0] ?? null;
 }
 
-/** Is the hold still running right now? Evaluated on the DB clock, after any lock waits. */
 export async function isHoldActive(db: Queryable, id: string): Promise<boolean> {
   const { rows } = await db.query<{ active: boolean }>(
     'SELECT expires_at > clock_timestamp() AS active FROM orders WHERE id = $1',
@@ -124,11 +117,6 @@ export async function markNeedsReview(
   );
 }
 
-/**
- * The pickup race is decided here: a conditional UPDATE. Postgres row locking
- * means only one concurrent caller can see status = 'paid' and change it; the
- * other re-reads the row after the winner commits, sees 'picked_up', and matches nothing.
- */
 export async function claimPickup(db: Queryable, id: string): Promise<boolean> {
   const { rowCount } = await db.query(
     `UPDATE orders SET status = 'picked_up', picked_up_at = clock_timestamp()
@@ -138,7 +126,6 @@ export async function claimPickup(db: Queryable, id: string): Promise<boolean> {
   return rowCount === 1;
 }
 
-/** Cosmetic: makes stored status match the clock. Holds are already released by expires_at. */
 export async function expireOverdue(db: Queryable, limit: number): Promise<number> {
   const { rowCount } = await db.query(
     `UPDATE orders SET status = 'expired'

@@ -54,7 +54,6 @@ export const api = {
   claimPickup: (orderId: string) => request<{ claimed: true; order: Order }>('POST', `/orders/${orderId}/pickup-claim`),
 };
 
-/** Paise → "₹45.00". Integer maths only; no floating-point rupees. */
 export function formatPaise(paise: number): string {
   const rupees = Math.trunc(paise / 100);
   const rest = String(Math.abs(paise % 100)).padStart(2, '0');

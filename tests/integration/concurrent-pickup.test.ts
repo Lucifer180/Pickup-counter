@@ -34,7 +34,6 @@ describe('pickup claims', () => {
     const loser = a.status === 409 ? a : b;
     expect(loser.body.error.code).toBe('ALREADY_CLAIMED');
 
-    // Stock reduced exactly once, permanently.
     expect(await productState(productId)).toEqual({ stock: 3, available: 3 });
     expect((await orderRow(orderId)).status).toBe('picked_up');
   });

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, type Product } from '../api/client';
 
-/** Loads the catalogue and refreshes it every few seconds so "available" stays honest. */
 export function useProducts(refreshMs = 5000) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
