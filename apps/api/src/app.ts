@@ -17,18 +17,8 @@ export function createApp(): Express {
   app.set('trust proxy', true);
 
   app.use(requestId);
-  // Browsers send only scheme+host+port, so strip any path/trailing slash from configured entries.
-  const origins = env.CORS_ORIGIN.split(',')
-    .map((o) => o.trim())
-    .filter(Boolean)
-    .map((o) => {
-      try {
-        return new URL(o).origin;
-      } catch {
-        return o;
-      }
-    });
-  app.use(cors({ origin: origins }));
+  // Allow requests from any origin.
+  app.use(cors());
 
   const json = express.json({ limit: '64kb' });
   app.use((req, res, next) => (req.path === WEBHOOK_PATH ? next() : json(req, res, next)));
