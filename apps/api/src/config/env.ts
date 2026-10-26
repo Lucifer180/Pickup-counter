@@ -20,7 +20,7 @@ const schema = z.object({
 
   ENABLE_PAYMENT_SIMULATOR: bool.default('false'),
 
-  CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  CORS_ORIGIN: z.string().default('http://localhost:5173,https://lucifer180.github.io'),
 
   WEB_DIST_DIR: z.string().optional(),
 });
